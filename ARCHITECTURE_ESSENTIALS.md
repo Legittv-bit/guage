@@ -49,7 +49,7 @@ Status: design target v0.1; Phase 3 is complete as of 2026-11-05 and Phase 4 is 
 
 - `source`: `Network()`, `Account()`; Horizon first, RPC later. `source.Compare` is the pure field-by-field comparison behind `src-disagreement` (5.1): field names only, never values. [6.4]
 - `rules`: pure functions over `AccountSnapshot` plus policy, and one pure `Facts` function over the same context that returns observations rather than findings. [6.7]
-- `report`: text, JSON, markdown (P1, shipped by 5.3); facts printed ahead of findings, then ordering severity, account, rule. Exit reads findings only, so a fact cannot fail a run. [6.8]
+- `report`: text, JSON, markdown (P1, shipped by 5.3); facts printed ahead of findings, then ordering severity, account, rule. Exit reads findings only, so a fact cannot fail a run. The JSON envelope writes `schema_version` first, and that number changes only on a breaking shape change. [6.8, 7.76]
 
 ## 5. Packages (import direction) [project_structure.md]
 

@@ -8,14 +8,24 @@ import (
 	"github.com/posture-sec/guage/internal/sanitize"
 )
 
+// SchemaVersion is the version of the JSON envelope written by JSON. It changes
+// only when a field name, type or required field changes, not when a new report
+// adds an optional field.
+const SchemaVersion = 1
+
 // JSON writes the report as stable, indented JSON with severity names and a
 // limits field. The input is copied and sanitized first, so rendering never
 // changes the report the caller holds.
 func JSON(w io.Writer, r model.Report) error {
 	document := struct {
+		SchemaVersion int `json:"schema_version"`
 		model.Report
 		Limits string `json:"limits"`
-	}{prepare(r), Limits}
+	}{
+		SchemaVersion: SchemaVersion,
+		Report:        prepare(r),
+		Limits:        Limits,
+	}
 
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
@@ -27,13 +37,18 @@ func JSON(w io.Writer, r model.Report) error {
 // empty collections rendered as empty arrays rather than null.
 func prepare(r model.Report) model.Report {
 	out := r
+	out.ToolVersion = sanitize.Text(r.ToolVersion)
+	out.Network = sanitize.Text(r.Network)
 	out.Accounts = make([]model.AccountReport, len(r.Accounts))
 	for i, ar := range r.Accounts {
 		snapshot := ar.Snapshot
 		snapshot.ID = sanitize.Text(snapshot.ID)
+		snapshot.Network = sanitize.Text(snapshot.Network)
+		snapshot.Endpoint = sanitize.Text(snapshot.Endpoint)
 		snapshot.Sequence = sanitize.Text(snapshot.Sequence)
 		snapshot.HomeDomain, _ = sanitize.Domain(snapshot.HomeDomain)
 		snapshot.Sponsor = sanitize.Text(snapshot.Sponsor)
+		snapshot.Data = sanitizeData(snapshot.Data)
 
 		signers := make([]model.Signer, len(snapshot.Signers))
 		for j, s := range snapshot.Signers {
@@ -54,9 +69,11 @@ func prepare(r model.Report) model.Report {
 
 		findings := make([]model.Finding, len(ar.Findings))
 		for j, f := range ar.Findings {
+			f.RuleID = sanitize.Text(f.RuleID)
 			f.Account = sanitize.Text(f.Account)
 			f.Message = sanitize.Text(f.Message)
 			f.Evidence = sanitize.Text(f.Evidence)
+			f.Fingerprint = sanitize.Text(f.Fingerprint)
 			findings[j] = f
 		}
 		model.SortFindings(findings)
@@ -123,4 +140,15 @@ func sanitizePointer(value *string) *string {
 	}
 	cleaned := sanitize.Text(*value)
 	return &cleaned
+}
+
+func sanitizeData(data map[string]string) map[string]string {
+	if data == nil {
+		return nil
+	}
+	clean := make(map[string]string, len(data))
+	for key, value := range data {
+		clean[sanitize.Text(key)] = sanitize.Text(value)
+	}
+	return clean
 }

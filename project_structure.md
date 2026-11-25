@@ -102,6 +102,9 @@ guage/
       markdown.go                         # P1 output: escaped values, fenced evidence, limits footer (5.3)
       markdown_test.go                    # golden, hostile markup built from fragments, fencing, wording and footer (5.3)
       report_test.go                      # golden files, sanitization, determinism, exit tests and the fact block in both formats
+      json_sanitize_test.go               # exhaustive decoded-JSON string walk and sanitizer cap (7.78)
+      schema_version_test.go              # strict v1 envelope decode and unknown-key refusal (7.79)
+      partial_test.go                     # normal, missing and skipped accounts in one report (7.80)
       {limits,empty,nil_facts}_test.go    # golden-free contracts: limits footer last and a JSON key, the empty report in both formats, nil and empty fact blocks (7.14 to 7.16)
     run/
       {run,check,audit}.go                 # P0 orchestration: passphrase, bounded fetch, identity fetch, role severity, accepts, the fact block and `HasPolicy` (2.8, 3.4, 3.5, 3.7)
@@ -123,6 +126,7 @@ guage/
     policy/.gitkeep                       # still empty: a scenario declares its policy as `policy.Account` values in `internal/run/scenarios_test.go`, and acceptance and role cases are inline TOML in `internal/policy`
     golden/{sample.text,sample.json}.golden # regenerated only with `-update` and reviewed (2.6)
     golden/<scenario>.{text,json}.golden  # one pair per Appendix B case, 36 files, compared by `internal/run/scenarios_test.go` (3.6, 3.7)
+    golden/schema-v1.json                # strict-decode fixture for the versioned JSON envelope, not renderer output (7.79)
 
   docs/
     banner.svg                            # README banner; wordmark plus status line

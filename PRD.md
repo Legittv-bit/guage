@@ -115,7 +115,7 @@ Priority: **P0** ships in v0.1.0, **P1** in v0.2.0, **Later** is backlog. Task I
 | FR-06 | Role profiles: `issuer`, `treasury`, `distribution`, `merchant`, `other` change severities (Appendix A) | P0 | Same account yields different severity per role |
 | FR-07 | Accepted risks: `[[accept]]` entries with `rule`, `account`, `reason`, optional `network` and `expires` | P0 | Accepting never hides a non-acceptable rule |
 | FR-08 | Reject secret seeds in any input; never echo them | P0 | A valid `S...` string exits 2 with a rotate-the-key warning |
-| FR-09 | Outputs: text and JSON; sanitized strings | P0 | Control and bidi characters are stripped from all chain-derived text |
+| FR-09 | Outputs: text and JSON; sanitized strings | P0 | Control and bidi characters are stripped from every printed string; the JSON envelope carries `schema_version` first and a strict golden pins its field names and types (tasks 7.75 and 7.76) |
 | FR-10 | Exit codes: 0 pass, 1 findings at or above `fail_on`, 2 config or usage error, 3 source or internal error | P0 | Unreachable endpoint is exit 3, never 0 |
 | FR-11 | HTTP hygiene: timeouts, body size caps, bounded retries, bounded concurrency | P0 | Oversized or slow responses fail closed |
 | FR-12 | `stellar.toml` identity rules with an SSRF-guarded fetcher | P0 | Private, loopback and link-local targets are refused |
