@@ -14,7 +14,7 @@ import (
 
 func auditCommand(args []string, stdout, stderr io.Writer, d deps) int {
 	fs := newFlagSet("audit", stderr,
-		"usage: stellar-gauge audit [--config gauge.toml] [--format text|json] [--fail-on high|warn]")
+		"usage: stellar-gauge audit [--config gauge.toml] [--format text|json|markdown] [--fail-on high|warn]")
 	configPath := fs.String("config", defaultConfig, "policy file to load")
 	format := fs.String("format", "text", "output format: text or json")
 	failOn := fs.String("fail-on", "high", "fail at this severity: high or warn")
@@ -27,11 +27,8 @@ func auditCommand(args []string, stdout, stderr io.Writer, d deps) int {
 	if fs.NArg() != 0 {
 		return usageError(stderr, "audit takes no positional arguments; declare accounts in the policy file")
 	}
-	if *format == "markdown" {
-		return usageError(stderr, "markdown output is not implemented yet")
-	}
-	if !validFormat(*format) {
-		return usageError(stderr, "--format must be text or json")
+	if *format != "text" && *format != "json" && *format != "markdown" {
+		return usageError(stderr, "--format must be text, json or markdown")
 	}
 	severity, ok := parseFailOn(*failOn)
 	if !ok {

@@ -156,14 +156,17 @@ func checkGolden(t *testing.T, name string, got []byte) {
 
 func TestRenderersStripHostileStrings(t *testing.T) {
 	t.Parallel()
-	var text, document bytes.Buffer
+	var text, document, markdown bytes.Buffer
 	if err := Text(&text, sampleReport()); err != nil {
 		t.Fatal(err)
 	}
 	if err := JSON(&document, sampleReport()); err != nil {
 		t.Fatal(err)
 	}
-	for name, out := range map[string]string{"text": text.String(), "json": document.String()} {
+	if err := Markdown(&markdown, sampleReport()); err != nil {
+		t.Fatal(err)
+	}
+	for name, out := range map[string]string{"text": text.String(), "json": document.String(), "markdown": markdown.String()} {
 		for _, r := range []rune{0x1b, 0x07, 0x202e, 0x200b} {
 			if strings.ContainsRune(out, r) {
 				t.Fatalf("%s output kept U+%04X", name, r)
@@ -207,6 +210,9 @@ func TestRenderersDoNotMutate(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := JSON(&sink, input); err != nil {
+		t.Fatal(err)
+	}
+	if err := Markdown(&sink, input); err != nil {
 		t.Fatal(err)
 	}
 	after, err := json.Marshal(input)

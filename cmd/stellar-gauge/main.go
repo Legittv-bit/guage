@@ -131,9 +131,12 @@ func usageError(stderr io.Writer, message string) int {
 
 func render(stdout, stderr io.Writer, result model.Report, format string) int {
 	var err error
-	if format == "json" {
+	switch format {
+	case "json":
 		err = report.JSON(stdout, result)
-	} else {
+	case "markdown":
+		err = report.Markdown(stdout, result)
+	default:
 		err = report.Text(stdout, result)
 	}
 	if err != nil {

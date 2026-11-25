@@ -1,6 +1,6 @@
 # ROADMAP: Gauge
 
-Last updated: 2026-11-19T11:05Z (task 7.10, Valid and Equal helpers for Thresholds and Flags)
+Last updated: 2026-11-25T13:53Z (task 5.3, Markdown report output for audit)
 Roadmap version: 3
 
 This file is the single source of truth for remaining work. It is read before every task and updated after every change.
@@ -38,10 +38,10 @@ The repository is 100% ready when every task in Phases 0 to 6 is done and every 
 | 2 | Core | 11 | 11 | 100% |
 | 3 | Rules | 7 | 7 | 100% |
 | 4 | Dogfood and release v0.1.0 | 2 | 9 | 22% |
-| 5 | v0.2 features | 3 | 11 | 27% |
+| 5 | v0.2 features | 4 | 11 | 36% |
 | 6 | Release v0.2.0 and community | 0 | 5 | 0% |
 | 7 (backlog) | Backlog | 1 | 5 | 20% |
-| **Phases 0 to 6** | **Readiness total** | **56** | **79** | **70%** |
+| **Phases 0 to 6** | **Readiness total** | **57** | **79** | **72%** |
 | Gates | G1 to G10 | 3 | 10 | 30% |
 <!-- PROGRESS:END -->
 
@@ -202,7 +202,7 @@ Constraint on the two remaining experimental tasks: Gauge never builds or submit
 
 - [ ] **5.1** Multi-endpoint comparison with `src-disagreement`. M. Deps: 4.8.
 - [ ] **5.2** `snapshot` and `diff` with baseline files and the review banner; documented guidance to store baselines outside the audited repo. M. Deps: 4.8.
-- [ ] **5.3** Markdown output with safe escaping and fenced evidence. M. Deps: 2.5.
+- [x] **5.3** Markdown output with safe escaping and fenced evidence. M. Deps: 2.5. (done 2026-11-25: `report.Markdown` renders the same prepared report the text and JSON renderers do, so severity, wording, fingerprints, ordering and the limits footer cannot drift between formats, and `audit --format markdown` writes it. `check` still refuses markdown, because PRD 6.2 gives that command text and JSON and a one-account read is not the document a review or a scheduled job wants; the refusal is pinned by `TestCheckRejectsMarkdown` rather than left to the usage text. Escaping is the existing sanitizer rather than a second implementation: every chain, policy and stellar.toml value goes through `sanitize.Markdown`, and finding evidence is printed only through `sanitize.Fenced`, whose fence is longer than any backtick run inside the body, so a hostile home domain, account name or message cannot open markup or close the block. Evidence arrives through `prepare`, which collapses newlines exactly as the text report does, so a line break in a finding cannot become a heading either; a test feeds a triple backtick and a `# heading` line and asserts both the longer fence and the text staying inside it. Facts and findings keep the order the text report uses, each account prints the `declared:` and `identity document:` sections its fact block carries, an account with no fact block prints neither, and an empty report still says no accounts were checked. The golden is `testdata/golden/sample.markdown.golden`, beside the text and JSON pair 2.6 started; the CLI test drives `audit --config ... --format markdown` through the offline endpoint and asserts the heading, the account section, the findings section and the limits footer. No new dependency, no network call, no flag other than widening the value `--format` accepts on audit, and no change to text or JSON output or to any rule. Docs: `README.md` (the unwritten list loses markdown output and the usage paragraph names the split), `ARCHITECTURE.md` 6.8, `ARCHITECTURE_ESSENTIALS.md` 4 and 13, and `site/guides.html`'s audit flag table and example.)
 - [ ] **5.4** Scheduled GitHub Action template that opens an issue on findings, with minimal permissions and SHA pinning. M. Deps: 5.2, 5.3.
 - [ ] **5.5** Trustline exposure facts (issuer flags for each held asset). M. Deps: 0.6.
 - [ ] **5.6** SEP-29 memo-required check for merchant accounts. S. Deps: 0.8.
@@ -277,6 +277,7 @@ Newest first. One row per merged change.
 
 | Date (UTC) | Change | Tasks |
 |---|---|---|
+| 2026-11-25 | Task 5.3, Markdown output: `report.Markdown` renders the prepared report as a Markdown document and `audit --format markdown` writes it, using the existing sanitizer rather than a second escaper. Every chain, policy and stellar.toml value goes through `sanitize.Markdown`; finding evidence goes only through `sanitize.Fenced`, whose fence outgrows any backtick run inside it, so hostile content cannot open markup or close its block. `prepare` collapses newlines before the fence, so a finding's line break cannot become a heading. `check` keeps text and JSON, which is the split PRD 6.2 already documented, and a test pins the refusal. Text and JSON output, every rule and every existing golden are unchanged; the new golden is `testdata/golden/sample.markdown.golden`. `README.md`, `ARCHITECTURE.md` 6.8, `ARCHITECTURE_ESSENTIALS.md` 4 and 13 and `site/guides.html` now describe the shipped format instead of the missing one. | 5.3 |
 | 2026-11-19 | Task 7.10: added `Valid` and `Equal` to `model.Thresholds` and `model.Flags`, with boundary, equality and sixteen-combination tests in `internal/model/account_thresholds_test.go`. A threshold outside 0 to 255 in a decode or fixture is now detectable; the drift rules and their messages are unchanged. Backlog row added to `scripts/generate_issues.sh`. | 7.10 |
 | 2026-11-09 | Updated Drips Wave submission packet (docs/WAVE_SUBMISSION.md) for Wave 11: confirmed 200 unit tests passing, all 16 rules registered, OpenSSF Scorecard at 6.8 with live badge, live documentation site at https://posture-sec.github.io/guage/, dynamic README metric sync, and updated sibling comparison data across org repositories. | none ticked |
 | 2026-11-09 | Finalized project naming by removing all occurrences of "working name" across repository documentation, PRD, architecture, and roadmap files. Implemented dynamic README metrics synchronization (`scripts/sync_readme.py`) generating live Shields.io endpoint JSON files under `site/data/` for 200 tests and 16 rules, and enforced with `--check` in the `roadmap-check` workflow. | none ticked |

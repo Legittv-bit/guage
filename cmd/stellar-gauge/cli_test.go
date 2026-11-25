@@ -709,10 +709,39 @@ func TestAuditRejectsAPositionalArgument(t *testing.T) {
 	}
 }
 
-func TestAuditRejectsMarkdownUntilItExists(t *testing.T) {
+// Task 5.3: audit writes a Markdown document from the same report, and check keeps
+// the two formats PRD 6.2 gives it. A one-account read is not the document a review
+// or a scheduled job wants, and widening the flag on check would be a scope the PRD
+// did not ask for.
+func TestAuditRendersMarkdown(t *testing.T) {
 	t.Parallel()
-	code, _, stderr := execCLI(t, "audit", "--format", "markdown")
-	if code != 2 || !strings.Contains(stderr, "markdown output is not implemented yet") {
+	srv := startEndpoint(t, endpoint{})
+	path := writePolicy(t, policyFor(srv.URL))
+	code, stdout, stderr := execCLI(t, "audit", "--config", path, "--format", "markdown")
+	if code != 0 {
+		t.Fatalf("exit code = %d, want 0 (stderr %q)", code, stderr)
+	}
+	for _, want := range []string{
+		"# Gauge ",
+		"## account " + accountOne,
+		"- endpoint: " + srv.URL,
+		"### findings",
+		"limits: ",
+	} {
+		if !strings.Contains(stdout, want) {
+			t.Errorf("markdown output has no %q:\n%s", want, stdout)
+		}
+	}
+	if strings.ContainsRune(stdout, 0x1b) {
+		t.Fatal("markdown output kept a control character")
+	}
+}
+
+func TestCheckRejectsMarkdown(t *testing.T) {
+	t.Parallel()
+	code, _, stderr := execCLI(t, "check", "--network", testNetwork,
+		"--endpoint", "https://horizon-testnet.stellar.org", "--format", "markdown", accountOne)
+	if code != 2 || !strings.Contains(stderr, "--format must be text or json") {
 		t.Fatalf("exit code = %d, stderr %q", code, stderr)
 	}
 }
